@@ -183,6 +183,7 @@ thread_create (const char *name, int priority,
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
 
+  t->ticks_blocked = 0;    /*initialization*/
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame (t, sizeof *kf);
   kf->eip = NULL;
@@ -225,6 +226,19 @@ priority_less(struct list_elem *a,struct list_elem *b,void *aux){
 return list_entry(a,struct thread,elem)->priority >
        list_entry(b,struct thread,elem)->priority;
        }
+       
+void
+blocked_thread_check(struct thread *t,void *aux UNUSED)
+{
+if(t->status==THREAD_BLOCKED&&t->ticks_blocked>0)
+{
+t->ticks_blocked--;
+if(t->ticks_blocked==0)
+{
+thread_unblock(t);
+}
+}
+}
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -587,3 +601,4 @@ allocate_tid (void)
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
+
