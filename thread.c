@@ -374,7 +374,7 @@ current_thread->original_priority = new_priority;
 if(list_empty(&current_thread->locks)||new_priority>old_priority)
 {
 current_thread->priority = new_priority;
-thread_yield;
+thread_yield();
 }
 intr_set_level(old_level);
 }
